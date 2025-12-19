@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Viewer - Walking Animation</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: monospace;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #partSelector {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 1000;
+            max-width: 350px;
+        }
+
+        .section-title {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .part-category {
+            margin: 15px 0;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 5px;
+        }
+
+        .category-title {
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-title:hover {
+            color: #FFF;
+        }
+
+        .category-title::after {
+            content: '▼';
+            font-size: 10px;
+            transition: transform 0.3s;
+        }
+
+        .category-title.collapsed::after {
+            transform: rotate(-90deg);
+        }
+
+        .part-list {
+            max-height: 2000px;
+            overflow-y: auto;
+            transition: max-height 0.4s ease-out, opacity 0.3s ease-out;
+            opacity: 1;
+        }
+
+        .part-list.collapsed {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        .part-item {
+            padding: 5px;
+            margin: 3px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .part-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .part-item label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 11px;
+        }
+
+        button {
+            padding: 8px 15px;
+            margin: 5px 5px 5px 0;
+            cursor: pointer;
+            font-family: monospace;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .reset-btn {
+            background: #f44336;
+        }
+
+        .reset-btn:hover {
+            background: #da190b;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: #444;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #4CAF50;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #4CAF50;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+
+        input[type="text"] {
+            width: 250px;
+            padding: 5px;
+            margin: 5px 0;
+            font-family: monospace;
+        }
+
+        .controls-bottom {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="partSelector" style="display: none;">
+        <div class="section-title">🤖 Robot Parts Detected</div>
+        <div style="font-size: 10px; color: #888; margin-bottom: 15px;">
+            Check the boxes to assign parts for animation
+        </div>
+
+        <div class="part-category">
+            <div class="category-title collapsed" onclick="toggleCategory(this)">Left Leg</div>
+            <div class="part-list collapsed" id="leftLegList"></div>
+        </div>
+
+        <div class="part-category">
+            <div class="category-title collapsed" onclick="toggleCategory(this)">Right Leg</div>
+            <div class="part-list collapsed" id="rightLegList"></div>
+        </div>
+
+        <div class="part-category">
+            <div class="category-title collapsed" onclick="toggleCategory(this)">Left Arm</div>
+            <div class="part-list collapsed" id="leftArmList"></div>
+        </div>
+
+        <div class="part-category">
+            <div class="category-title collapsed" onclick="toggleCategory(this)">Right Arm</div>
+            <div class="part-list collapsed" id="rightArmList"></div>
+        </div>
+
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <span style="color: #4CAF50; font-weight: bold;">Speed Control:</span>
+                    <span id="speedValue" style="color: #FFD700;">0.3x</span>
+                </div>
+                <input type="range" id="speedSlider" min="0.05" max="1.0" step="0.05" value="0.3"
+                    style="width: 100%; cursor: pointer;" oninput="updateSpeed(this.value)">
+                <div
+                    style="display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-top: 3px;">
+                    <span>Very Slow (0.05x)</span>
+                    <span>Normal (0.3x)</span>
+                    <span>Fast (1.0x)</span>
+                </div>
+            </div>
+
+            <button onclick="testAnimation()">Test Animation</button>
+            <button onclick="resetPosition()">Reset Position</button>
+            <button class="reset-btn" onclick="resetParts()">Reset All</button>
+        </div>
+    </div>
+
+    <div class="controls-bottom">
+        <strong>Load Robot:</strong><br>
+        <input type="text" id="modelPath" value="../Resources3D/model/robot.glb">
+        <button onclick="loadRobot()">Load</button>
+        <div style="margin-top: 5px; font-size: 10px; color: #888;">
+            Arrow Keys = Move Robot
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xcccccc);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 2, 5);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Grid
+        const gridHelper = new THREE.GridHelper(10, 10);
+        scene.add(gridHelper);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2); // Increased from 0.7 to 1.2
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2); // Increased from 0.8 to 1.2
+        directionalLight.position.set(5, 10, 5);
+        scene.add(directionalLight);
+
+        // Add additional fill light to brighten robot
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        fillLight.position.set(-5, 5, -5);
+        scene.add(fillLight);
+
+        // Robot variables
+        let model;
+        let loader;
+        let allParts = [];
+        let robotParts = {
+            leftLeg: null,
+            rightLeg: null,
+            leftArm: null,
+            rightArm: null
+        };
+        let walkCycle = 0;
+        let isWalking = false;
+        let targetRotation = Math.PI; // Target rotation for smooth turning
+        let currentRotation = Math.PI; // Current rotation
+        let moveDirection = { forward: 0, right: 0 }; // -1 to 1 for each axis
+        let speedMultiplier = 0.3; // Speed control multiplier (default 0.3 = normal, slower than before)
+
+        function initLoader() {
+            if (!THREE.GLTFLoader) {
+                setTimeout(initLoader, 100);
+                return;
+            }
+            loader = new THREE.GLTFLoader();
+            setTimeout(() => loadRobot(), 500);
+        }
+
+        function toggleCategory(titleElement) {
+            const partList = titleElement.nextElementSibling;
+            titleElement.classList.toggle('collapsed');
+            partList.classList.toggle('collapsed');
+        }
+
+        function updateSpeed(value) {
+            speedMultiplier = parseFloat(value);
+            document.getElementById('speedValue').textContent = value + 'x';
+        }
+
+        function populatePartLists() {
+            const lists = {
+                leftLeg: document.getElementById('leftLegList'),
+                rightLeg: document.getElementById('rightLegList'),
+                leftArm: document.getElementById('leftArmList'),
+                rightArm: document.getElementById('rightArmList')
+            };
+
+            // Clear all lists
+            Object.values(lists).forEach(list => list.innerHTML = '');
+
+            // Add all parts to each list
+            allParts.forEach((part, index) => {
+                Object.keys(lists).forEach(type => {
+                    const item = document.createElement('div');
+                    item.className = 'part-item';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `${type}_${index}`;
+                    checkbox.name = type;
+                    checkbox.value = index;
+                    checkbox.onchange = function () {
+                        if (this.checked) {
+                            // Uncheck all other checkboxes in this category
+                            document.querySelectorAll(`input[name="${type}"]`).forEach(cb => {
+                                if (cb !== this) cb.checked = false;
+                            });
+                            assignPart(type, index);
+                        } else {
+                            robotParts[type] = null;
+                        }
+                    };
+
+                    const label = document.createElement('label');
+                    label.htmlFor = checkbox.id;
+                    label.textContent = part.name || `Part_${index}`;
+
+                    item.appendChild(checkbox);
+                    item.appendChild(label);
+                    lists[type].appendChild(item);
+                });
+            });
+        }
+
+        function assignPart(partType, index) {
+            robotParts[partType] = allParts[parseInt(index)];
+            console.log(`${partType} assigned to: ${allParts[parseInt(index)].name}`);
+        }
+
+        function testAnimation() {
+            const testDuration = 3000;
+            const startTime = Date.now();
+
+            function testWalk() {
+                if (Date.now() - startTime < testDuration) {
+                    walkCycle += 0.15;
+                    updateWalkAnimation();
+                    requestAnimationFrame(testWalk);
+                }
+            }
+            testWalk();
+        }
+
+        function resetParts() {
+            robotParts = {
+                leftLeg: null,
+                rightLeg: null,
+                leftArm: null,
+                rightArm: null
+            };
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        }
+
+        function resetPosition() {
+            if (model) {
+                model.position.set(0, 0, 0);
+                model.rotation.y = Math.PI;
+
+                // Reset rotation variables
+                targetRotation = Math.PI;
+                currentRotation = Math.PI;
+
+                // Reset all part rotations to neutral
+                if (robotParts.leftLeg) robotParts.leftLeg.rotation.x = 0;
+                if (robotParts.rightLeg) robotParts.rightLeg.rotation.x = 0;
+                if (robotParts.leftArm) robotParts.leftArm.rotation.x = 0;
+                if (robotParts.rightArm) robotParts.rightArm.rotation.x = 0;
+
+                walkCycle = 0;
+                isWalking = false;
+
+                console.log('Robot position reset to center');
+            }
+        }
+
+        function loadRobot() {
+            const path = '../Resources3D/model/robot.glb';
+
+            if (!loader) return;
+
+            if (model) scene.remove(model);
+
+            loader.load(
+                path,
+                function (gltf) {
+                    model = gltf.scene;
+
+                    // Collect all parts
+                    allParts = [];
+                    model.traverse((child) => {
+                        if (child.isMesh || child.isGroup || child.isObject3D) {
+                            allParts.push(child);
+                        }
+                    });
+
+                    console.log(`Found ${allParts.length} parts`);
+
+                    // Calculate size and scale
+                    const box = new THREE.Box3().setFromObject(model);
+                    const size = box.getSize(new THREE.Vector3());
+                    const center = box.getCenter(new THREE.Vector3());
+
+                    model.position.sub(center);
+
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 2 / maxDim;
+                    model.scale.set(scale, scale, scale);
+
+                    model.rotation.y = Math.PI;
+                    model.position.set(0, 0, 0);
+                    scene.add(model);
+
+                    // Initialize rotation variables
+                    targetRotation = Math.PI;
+                    currentRotation = Math.PI;
+
+                    // Show part selector
+                    document.getElementById('partSelector').style.display = 'block';
+                    populatePartLists();
+                },
+                function (progress) {
+                    if (progress.lengthComputable && progress.total > 0) {
+                        const percent = (progress.loaded / progress.total * 100).toFixed(0);
+                        console.log('Loading: ' + percent + '%');
+                    }
+                },
+                function (error) {
+                    console.error('Error loading robot:', error);
+                }
+            );
+        }
+
+        function updateWalkAnimation() {
+            const legSwing = Math.sin(walkCycle) * 0.3; // Reduced from 0.6 to 0.3 for realistic movement
+            const armSwing = Math.sin(walkCycle) * 0.2; // Reduced from 0.4 to 0.2 for realistic movement
+
+            if (robotParts.leftLeg) {
+                robotParts.leftLeg.rotation.x = legSwing;
+            }
+            if (robotParts.rightLeg) {
+                robotParts.rightLeg.rotation.x = -legSwing;
+            }
+            if (robotParts.leftArm) {
+                robotParts.leftArm.rotation.x = -armSwing;
+            }
+            if (robotParts.rightArm) {
+                robotParts.rightArm.rotation.x = armSwing;
+            }
+        }
+
+        // Keyboard
+        const keys = {};
+        document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+        document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (model) {
+                const baseSpeed = 0.05;
+                const speed = baseSpeed * speedMultiplier;
+                const rotationSpeed = 0.08 * speedMultiplier;
+                let moving = false;
+
+                // Determine movement direction
+                moveDirection = { forward: 0, right: 0 };
+
+                if (keys['ArrowUp']) {
+                    moveDirection.forward = 1; // Move forward (away from camera)
+                    moving = true;
+                }
+                if (keys['ArrowDown']) {
+                    moveDirection.forward = -1; // Move backward (toward camera)
+                    moving = true;
+                }
+                if (keys['ArrowLeft']) {
+                    moveDirection.right = 1; // Turn right (reversed)
+                    moving = true;
+                }
+                if (keys['ArrowRight']) {
+                    moveDirection.right = -1; // Turn left (reversed)
+                    moving = true;
+                }
+
+                // Handle rotation (turning)
+                if (moveDirection.right !== 0) {
+                    targetRotation += rotationSpeed * moveDirection.right;
+                }
+
+                // Smooth rotation interpolation
+                const rotationDiff = targetRotation - currentRotation;
+                currentRotation += rotationDiff * 0.15; // Smooth rotation
+                model.rotation.y = currentRotation;
+
+                // Handle forward/backward movement
+                if (moveDirection.forward !== 0) {
+                    // Calculate movement direction based on robot's current rotation
+                    const moveX = Math.sin(currentRotation) * speed * moveDirection.forward;
+                    const moveZ = Math.cos(currentRotation) * speed * moveDirection.forward;
+
+                    model.position.x += moveX;
+                    model.position.z += moveZ;
+                }
+
+                // Walking animation
+                if (moving) {
+                    isWalking = true;
+                    walkCycle += 0.15 * speedMultiplier;
+                    updateWalkAnimation();
+                } else {
+                    if (isWalking) {
+                        isWalking = false;
+                        // Smooth return to neutral position
+                        if (robotParts.leftLeg) robotParts.leftLeg.rotation.x *= 0.85;
+                        if (robotParts.rightLeg) robotParts.rightLeg.rotation.x *= 0.85;
+                        if (robotParts.leftArm) robotParts.leftArm.rotation.x *= 0.85;
+                        if (robotParts.rightArm) robotParts.rightArm.rotation.x *= 0.85;
+                    }
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        initLoader();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</body>
+
+</html>
