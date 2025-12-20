@@ -16,19 +16,6 @@
             display: block;
         }
 
-        #fileSelector {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 20px;
-            border-radius: 5px;
-            font-size: 12px;
-            z-index: 1000;
-            max-width: 400px;
-        }
-
         #partSelector {
             position: fixed;
             top: 10px;
@@ -42,7 +29,6 @@
             overflow-y: auto;
             z-index: 1000;
             max-width: 350px;
-            display: none;
         }
 
         .section-title {
@@ -194,15 +180,6 @@
 </head>
 
 <body>
-    <div id="fileSelector">
-        <div class="section-title">📁 Load Robot Model</div>
-        <div class="info-text">
-            Select a .glb or .gltf file from your computer
-        </div>
-        <input type="file" id="modelFile" accept=".glb,.gltf" onchange="handleFileSelect(event)">
-        <div id="status" class="status-text"></div>
-    </div>
-
     <div id="partSelector">
         <div class="section-title">🤖 Robot Parts Detected</div>
         <div style="font-size: 10px; color: #888; margin-bottom: 15px;">

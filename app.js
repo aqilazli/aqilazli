@@ -65,53 +65,21 @@ let bowSpeed = 0.05;
 
 // Auto-load robot.glb from model folder
 window.addEventListener('load', function() {
-    const statusEl = document.getElementById('status');
-    statusEl.textContent = 'Loading robot.glb...';
-
     loader.load(
         './model/robot.glb',
         function(gltf) {
             loadModelFromGLTF(gltf);
-            statusEl.textContent = '✓ Robot loaded successfully!';
+            console.log('✓ Robot loaded successfully!');
         },
         function(xhr) {
             const percent = (xhr.loaded / xhr.total * 100).toFixed(1);
-            statusEl.textContent = `Loading: ${percent}%`;
+            console.log(`Loading: ${percent}%`);
         },
         function(error) {
-            statusEl.textContent = '✗ Failed to load - Use file picker instead';
-            console.error('Load error:', error);
+            console.error('Failed to load robot.glb:', error);
         }
     );
 });
-
-window.handleFileSelect = function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const statusEl = document.getElementById('status');
-    statusEl.textContent = 'Loading: ' + file.name;
-
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        try {
-            loader.parse(e.target.result, '', function (gltf) {
-                loadModelFromGLTF(gltf);
-                statusEl.textContent = '✓ Model loaded successfully!';
-            }, function (error) {
-                statusEl.textContent = '✗ Error parsing model';
-                console.error('Parse error:', error);
-            });
-        } catch (err) {
-            statusEl.textContent = '✗ Error reading file';
-            console.error('File error:', err);
-        }
-    };
-    reader.onerror = function () {
-        statusEl.textContent = '✗ Error reading file';
-    };
-    reader.readAsArrayBuffer(file);
-}
 
 function loadModelFromGLTF(gltf) {
     if (model) scene.remove(model);
@@ -146,9 +114,6 @@ function loadModelFromGLTF(gltf) {
     targetRotation = Math.PI;
     currentRotation = Math.PI;
 
-    // Show part selector, hide file selector
-    document.getElementById('fileSelector').style.display = 'none';
-    document.getElementById('partSelector').style.display = 'block';
     populatePartLists();
 }
 
