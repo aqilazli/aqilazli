@@ -279,6 +279,68 @@ document.addEventListener('keydown', (e) => {
 });
 document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
+// Mobile joystick controls
+let joystickActive = false;
+let joystickVector = { x: 0, y: 0 };
+
+const joystickContainer = document.getElementById('joystickContainer');
+const joystickStick = document.getElementById('joystickStick');
+const jumpButton = document.getElementById('jumpButton');
+
+function handleJoystickMove(touch) {
+    const rect = document.getElementById('joystickBase').getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    let deltaX = touch.clientX - centerX;
+    let deltaY = touch.clientY - centerY;
+
+    const maxDistance = 35;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    if (distance > maxDistance) {
+        deltaX = (deltaX / distance) * maxDistance;
+        deltaY = (deltaY / distance) * maxDistance;
+    }
+
+    joystickStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+
+    joystickVector.x = deltaX / maxDistance;
+    joystickVector.y = deltaY / maxDistance;
+}
+
+function resetJoystick() {
+    joystickStick.style.transform = 'translate(-50%, -50%)';
+    joystickVector = { x: 0, y: 0 };
+    joystickActive = false;
+}
+
+joystickContainer.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    joystickActive = true;
+    handleJoystickMove(e.touches[0]);
+});
+
+joystickContainer.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (joystickActive) {
+        handleJoystickMove(e.touches[0]);
+    }
+});
+
+joystickContainer.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    resetJoystick();
+});
+
+jumpButton.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (model && !isJumping) {
+        isJumping = true;
+        jumpVelocity = jumpStrength;
+    }
+});
+
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
@@ -305,6 +367,15 @@ function animate() {
         }
         if (keys['ArrowRight'] || keys['KeyD']) {
             moveDirection.right = -1;
+            moving = true;
+        }
+
+        // Mobile joystick input
+        if (joystickActive && (Math.abs(joystickVector.x) > 0.1 || Math.abs(joystickVector.y) > 0.1)) {
+            // Forward/backward movement
+            moveDirection.forward = -joystickVector.y;
+            // Left/right rotation
+            moveDirection.right = -joystickVector.x;
             moving = true;
         }
 

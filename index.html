@@ -176,10 +176,100 @@
             font-size: 11px;
             margin-bottom: 10px;
         }
+
+        /* Mobile Controls */
+        #mobileControls {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        #joystickContainer {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 120px;
+            height: 120px;
+            pointer-events: all;
+        }
+
+        #joystickBase {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            position: relative;
+        }
+
+        #joystickStick {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(76, 175, 80, 0.8);
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s;
+        }
+
+        #jumpButton {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(76, 175, 80, 0.8);
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: all;
+            user-select: none;
+            touch-action: none;
+        }
+
+        #jumpButton:active {
+            background: rgba(76, 175, 80, 1);
+            transform: scale(0.95);
+        }
+
+        @media (min-width: 769px) {
+            #mobileControls {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #mobileControls {
+                display: block;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <!-- Mobile Controls -->
+    <div id="mobileControls">
+        <div id="joystickContainer">
+            <div id="joystickBase">
+                <div id="joystickStick"></div>
+            </div>
+        </div>
+        <div id="jumpButton">JUMP</div>
+    </div>
+
     <div id="partSelector">
         <div class="section-title" onclick="toggleMainPanel()" style="cursor: pointer; user-select: none;">
             🤖 Robot Parts <span id="toggleArrow">▶</span>
