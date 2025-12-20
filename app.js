@@ -48,8 +48,8 @@ let robotParts = {
 };
 let walkCycle = 0;
 let isWalking = false;
-let targetRotation = Math.PI;
-let currentRotation = Math.PI;
+let targetRotation = (30 * Math.PI) / 180; // 30 degrees
+let currentRotation = (30 * Math.PI) / 180;
 let moveDirection = { forward: 0, right: 0 };
 let speedMultiplier = 0.3;
 
@@ -107,14 +107,27 @@ function loadModelFromGLTF(gltf) {
     const scale = 2 / maxDim;
     model.scale.set(scale, scale, scale);
 
-    model.rotation.y = Math.PI;
+    model.rotation.y = (30 * Math.PI) / 180; // 30 degrees
     model.position.set(0, 0, 0);
     scene.add(model);
 
-    targetRotation = Math.PI;
-    currentRotation = Math.PI;
+    targetRotation = (30 * Math.PI) / 180;
+    currentRotation = (30 * Math.PI) / 180;
 
     populatePartLists();
+}
+
+window.toggleMainPanel = function() {
+    const content = document.getElementById('mainPanelContent');
+    const arrow = document.getElementById('toggleArrow');
+
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        arrow.textContent = '▼';
+    } else {
+        content.style.display = 'none';
+        arrow.textContent = '▶';
+    }
 }
 
 window.toggleCategory = function(titleElement) {
@@ -209,10 +222,10 @@ window.resetParts = function() {
 window.resetPosition = function() {
     if (model) {
         model.position.set(0, 0, 0);
-        model.rotation.y = Math.PI;
+        model.rotation.y = (30 * Math.PI) / 180;
 
-        targetRotation = Math.PI;
-        currentRotation = Math.PI;
+        targetRotation = (30 * Math.PI) / 180;
+        currentRotation = (30 * Math.PI) / 180;
 
         isJumping = false;
         jumpVelocity = 0;

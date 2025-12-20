@@ -181,10 +181,13 @@
 
 <body>
     <div id="partSelector">
-        <div class="section-title">🤖 Robot Parts Detected</div>
-        <div style="font-size: 10px; color: #888; margin-bottom: 15px;">
-            Check the boxes to assign parts for animation
+        <div class="section-title" onclick="toggleMainPanel()" style="cursor: pointer; user-select: none;">
+            🤖 Robot Parts <span id="toggleArrow">▶</span>
         </div>
+        <div id="mainPanelContent" style="display: none;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 15px;">
+                Check the boxes to assign parts for animation
+            </div>
 
         <div class="part-category">
             <div class="category-title collapsed" onclick="toggleCategory(this)">Left Leg</div>
@@ -226,6 +229,7 @@
             <button onclick="resetPosition()">Reset Position</button>
             <button onclick="testJump()">Test Jump</button>
             <button class="reset-btn" onclick="resetParts()">Reset All</button>
+        </div>
         </div>
     </div>
 
