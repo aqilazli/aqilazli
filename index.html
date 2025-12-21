@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robot Viewer - Walking Animation</title>
+    <title>Online Porfolio - Aqil</title>
     <style>
         body {
             margin: 0;
@@ -272,54 +272,67 @@
 
     <div id="partSelector">
         <div class="section-title" onclick="toggleMainPanel()" style="cursor: pointer; user-select: none;">
-            🤖 Robot Parts <span id="toggleArrow">▶</span>
+            Robot Component <span id="toggleArrow">▶</span>
         </div>
+
+        <!-- Robot Position Display 
+        <div style="background: rgba(0, 0, 0, 0.8); padding: 10px; margin: 10px 0; border-radius: 5px;">
+            <div style="color: #4CAF50; font-weight: bold; margin-bottom: 5px;">Robot Position:</div>
+            <div style="color: #FFF; font-size: 11px;">
+                <div>X (Left/Right): <span id="posX">0.00</span></div>
+                <div>Y (Forward/Back): <span id="posZ">0.00</span></div>
+                <div>Z (Up/Down): <span id="posY">0.00</span></div>
+            </div>
+        </div>
+        </p>
+        -->
         <div id="mainPanelContent" style="display: none;">
             <div style="font-size: 10px; color: #888; margin-bottom: 15px;">
                 Check the boxes to assign parts for animation
             </div>
 
-        <div class="part-category">
-            <div class="category-title collapsed" onclick="toggleCategory(this)">Left Leg</div>
-            <div class="part-list collapsed" id="leftLegList"></div>
-        </div>
-
-        <div class="part-category">
-            <div class="category-title collapsed" onclick="toggleCategory(this)">Right Leg</div>
-            <div class="part-list collapsed" id="rightLegList"></div>
-        </div>
-
-        <div class="part-category">
-            <div class="category-title collapsed" onclick="toggleCategory(this)">Left Arm</div>
-            <div class="part-list collapsed" id="leftArmList"></div>
-        </div>
-
-        <div class="part-category">
-            <div class="category-title collapsed" onclick="toggleCategory(this)">Right Arm</div>
-            <div class="part-list collapsed" id="rightArmList"></div>
-        </div>
-
-        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
-            <div style="margin-bottom: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                    <span style="color: #4CAF50; font-weight: bold;">Speed Control:</span>
-                    <span id="speedValue" style="color: #FFD700;">0.3x</span>
-                </div>
-                <input type="range" id="speedSlider" min="0.05" max="1.0" step="0.05" value="0.3"
-                    style="width: 100%; cursor: pointer;" oninput="updateSpeed(this.value)">
-                <div
-                    style="display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-top: 3px;">
-                    <span>Very Slow (0.05x)</span>
-                    <span>Normal (0.3x)</span>
-                    <span>Fast (1.0x)</span>
-                </div>
+            <div class="part-category">
+                <div class="category-title collapsed" onclick="toggleCategory(this)">Left Leg</div>
+                <div class="part-list collapsed" id="leftLegList"></div>
             </div>
 
-            <button onclick="testAnimation()">Test Animation</button>
-            <button onclick="resetPosition()">Reset Position</button>
-            <button onclick="testJump()">Test Jump</button>
-            <button class="reset-btn" onclick="resetParts()">Reset All</button>
-        </div>
+            <div class="part-category">
+                <div class="category-title collapsed" onclick="toggleCategory(this)">Right Leg</div>
+                <div class="part-list collapsed" id="rightLegList"></div>
+            </div>
+
+            <div class="part-category">
+                <div class="category-title collapsed" onclick="toggleCategory(this)">Left Arm</div>
+                <div class="part-list collapsed" id="leftArmList"></div>
+            </div>
+
+            <div class="part-category">
+                <div class="category-title collapsed" onclick="toggleCategory(this)">Right Arm</div>
+                <div class="part-list collapsed" id="rightArmList"></div>
+            </div>
+
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
+                <div style="margin-bottom: 15px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <span style="color: #4CAF50; font-weight: bold;">Speed Control:</span>
+                        <span id="speedValue" style="color: #FFD700;">0.3x</span>
+                    </div>
+                    <input type="range" id="speedSlider" min="0.05" max="1.0" step="0.05" value="0.3"
+                        style="width: 100%; cursor: pointer;" oninput="updateSpeed(this.value)">
+                    <div
+                        style="display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-top: 3px;">
+                        <span>Very Slow (0.05x)</span>
+                        <span>Normal (0.3x)</span>
+                        <span>Fast (1.0x)</span>
+                    </div>
+                </div>
+
+                <button onclick="testAnimation()">Test Animation</button>
+                <button onclick="resetPosition()">Reset Position</button>
+                <button onclick="testJump()">Test Jump</button>
+                <button class="reset-btn" onclick="resetParts()">Reset All</button>
+            </div>
         </div>
     </div>
 
