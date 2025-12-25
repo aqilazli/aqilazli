@@ -14,6 +14,10 @@
 
         canvas {
             display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
         }
 
         #partSelector {
@@ -29,6 +33,7 @@
             overflow-y: auto;
             z-index: 1000;
             max-width: 350px;
+            transition: transform 0.3s ease-in-out;
         }
 
         .section-title {
@@ -114,6 +119,8 @@
             border: none;
             border-radius: 3px;
             font-weight: bold;
+            min-height: 44px;
+            touch-action: manipulation;
         }
 
         button:hover {
@@ -186,25 +193,19 @@
             right: 0;
             bottom: 0;
             pointer-events: none;
-            z-index: 999;
+            z-index: 9999999;
         }
 
         #joystickContainer {
-            position: absolute;
-            bottom: 50%;
-            left: 50%;
-            transform: translate(-50%, 50%);
-            width: 120px;
-            height: 120px;
-            pointer-events: all;
+            display: none;
         }
 
         #joystickBase {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            border: 3px solid rgba(255, 255, 255, 0.4);
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            background: transparent;
+            border: none;
             position: relative;
         }
 
@@ -223,10 +224,10 @@
 
         #jumpButton {
             position: absolute;
-            bottom: 30px;
-            right: 30px;
-            width: 70px;
-            height: 70px;
+            bottom: 120px;
+            right: 80px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background: rgba(76, 175, 80, 0.3);
             border: 3px solid rgba(255, 255, 255, 0.4);
@@ -261,8 +262,16 @@
             max-width: 80%;
         }
 
-        @media (min-width: 769px) {
+        @media (min-width: 1025px) {
             #mobileControls {
+                display: none !important;
+            }
+
+            #jumpButton {
+                display: none !important;
+            }
+
+            #landscapeJumpButton {
                 display: none !important;
             }
         }
@@ -277,6 +286,187 @@
             #rotationReminder {
                 display: none;
             }
+
+            #joystickContainer {
+                bottom: 40px;
+                left: 40px;
+            }
+
+            #jumpButton {
+                bottom: 40px;
+                right: 40px;
+                width: 70px;
+                height: 70px;
+                display: flex;
+            }
+
+            #partSelector {
+                max-height: 60vh;
+            }
+        }
+
+        /* Phone-specific optimizations */
+        @media (max-width: 480px) {
+            #partSelector {
+                top: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                max-width: 100%;
+                max-height: 50vh;
+                border-radius: 15px 15px 0 0;
+                padding: 10px;
+                transform: translateY(calc(100% - 50px));
+            }
+
+            #partSelector.panel-open {
+                transform: translateY(0);
+            }
+
+            .section-title {
+                font-size: 16px;
+                padding: 10px;
+                text-align: center;
+                background: rgba(76, 175, 80, 0.2);
+                margin: -10px -10px 15px -10px;
+                border-radius: 15px 15px 0 0;
+            }
+
+            button {
+                width: 100%;
+                margin: 5px 0;
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            .part-item label {
+                font-size: 13px;
+            }
+
+            .category-title {
+                font-size: 14px;
+            }
+
+            input[type="range"] {
+                height: 8px;
+            }
+
+            input[type="range"]::-webkit-slider-thumb {
+                width: 24px;
+                height: 24px;
+            }
+
+            input[type="range"]::-moz-range-thumb {
+                width: 24px;
+                height: 24px;
+            }
+
+            .info-text {
+                font-size: 11px;
+            }
+
+            #joystickContainer {
+                bottom: 80px;
+                left: 30px;
+            }
+
+            #jumpButton {
+                bottom: 100px;
+                right: 30px;
+                width: 70px;
+                height: 70px;
+            }
+
+            /* Adjust panel to not overlap controls */
+            #partSelector {
+                max-height: 40vh;
+            }
+        }
+
+        /* Tablet optimizations */
+        @media (min-width: 481px) and (max-width: 768px) {
+            #partSelector {
+                max-width: 300px;
+                font-size: 13px;
+            }
+
+            button {
+                min-height: 48px;
+                font-size: 13px;
+            }
+        }
+
+        /* Toggle indicator for mobile */
+        .mobile-toggle-hint {
+            display: none;
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+
+        @media (max-width: 480px) {
+            .mobile-toggle-hint {
+                display: block;
+            }
+        }
+
+        /* Landscape override for MOBILE devices ONLY (not desktop) */
+        @media (orientation: landscape) and (max-width: 1024px) {
+            #mobileControls {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+
+            #jumpButton {
+                display: none !important;
+            }
+
+            #landscapeJumpButton {
+                position: fixed !important;
+                display: flex !important;
+                visibility: visible !important;
+                bottom: 30px !important;
+                right: 30px !important;
+                width: 60px !important;
+                height: 60px !important;
+                background: rgba(76, 175, 80, 0.3) !important;
+                border: 3px solid rgba(255, 255, 255, 0.4) !important;
+                border-radius: 50% !important;
+                font-size: 12px !important;
+                font-weight: bold !important;
+                color: white !important;
+                z-index: 999999999 !important;
+                pointer-events: all !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            #joystickContainer {
+                bottom: 30px !important;
+                left: 30px !important;
+            }
+
+            #rotationReminder {
+                display: none !important;
+            }
+        }
+
+        /* Tablet landscape */
+        @media (min-width: 481px) and (max-width: 768px) and (orientation: landscape) {
+            #mobileControls {
+                display: block !important;
+            }
+
+            #jumpButton {
+                display: flex !important;
+                pointer-events: all !important;
+            }
         }
     </style>
 </head>
@@ -285,7 +475,7 @@
     <!-- Mobile Controls -->
     <div id="mobileControls">
         <div id="rotationReminder">
-            Rotate phone landscape for better experience
+            Rotate phone for better experiences
         </div>
         <div id="joystickContainer">
             <div id="joystickBase">
@@ -295,22 +485,16 @@
         <div id="jumpButton">JUMP</div>
     </div>
 
+    <!-- LANDSCAPE JUMP BUTTON - SEPARATE FROM MOBILECONTROLS -->
+    <div id="landscapeJumpButton" style="display: none;">JUMP</div>
+
+    <!-- Robot Component Panel - Commented out for later use
     <div id="partSelector">
+        <div class="mobile-toggle-hint"></div>
         <div class="section-title" onclick="toggleMainPanel()" style="cursor: pointer; user-select: none;">
             Robot Component <span id="toggleArrow">▶</span>
         </div>
 
-        <!-- Robot Position Display 
-        <div style="background: rgba(0, 0, 0, 0.8); padding: 10px; margin: 10px 0; border-radius: 5px;">
-            <div style="color: #4CAF50; font-weight: bold; margin-bottom: 5px;">Robot Position:</div>
-            <div style="color: #FFF; font-size: 11px;">
-                <div>X (Left/Right): <span id="posX">0.00</span></div>
-                <div>Y (Forward/Back): <span id="posZ">0.00</span></div>
-                <div>Z (Up/Down): <span id="posY">0.00</span></div>
-            </div>
-        </div>
-        </p>
-        -->
         <div id="mainPanelContent" style="display: none;">
             <div style="font-size: 10px; color: #888; margin-bottom: 15px;">
                 Check the boxes to assign parts for animation
@@ -360,6 +544,7 @@
             </div>
         </div>
     </div>
+    -->
 
     <script type="importmap">
         {
@@ -368,6 +553,107 @@
                 "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
             }
         }
+    </script>
+    <script>
+        // Mobile panel toggle functionality
+        function toggleMainPanel() {
+            const panel = document.getElementById('partSelector');
+            const content = document.getElementById('mainPanelContent');
+            const arrow = document.getElementById('toggleArrow');
+
+            if (window.innerWidth <= 480) {
+                // On mobile, toggle panel slide up/down
+                panel.classList.toggle('panel-open');
+                if (content.style.display === 'none') {
+                    content.style.display = 'block';
+                    arrow.textContent = '▼';
+                } else {
+                    content.style.display = 'none';
+                    arrow.textContent = '▶';
+                }
+            } else {
+                // On desktop, just toggle content visibility
+                if (content.style.display === 'none') {
+                    content.style.display = 'block';
+                    arrow.textContent = '▼';
+                } else {
+                    content.style.display = 'none';
+                    arrow.textContent = '▶';
+                }
+            }
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const panel = document.getElementById('partSelector');
+            if (window.innerWidth > 480) {
+                panel.classList.remove('panel-open');
+            }
+        });
+
+        // Force jump button visibility in landscape mode (mobile only)
+        function checkOrientation() {
+            const jumpButton = document.getElementById('jumpButton');
+            const landscapeJumpButton = document.getElementById('landscapeJumpButton');
+            const mobileControls = document.getElementById('mobileControls');
+            const rotationReminder = document.getElementById('rotationReminder');
+
+            console.log('=== ORIENTATION CHECK ===');
+            console.log('Window size:', window.innerWidth, 'x', window.innerHeight);
+            console.log('Orientation:', window.matchMedia("(orientation: landscape)").matches ? 'LANDSCAPE' : 'PORTRAIT');
+            console.log('Landscape Jump button exists:', !!landscapeJumpButton);
+
+            // Check if desktop mode (width >= 769px)
+            if (window.innerWidth >= 769) {
+                // Desktop mode - hide everything
+                if (mobileControls) {
+                    mobileControls.style.display = 'none';
+                }
+                if (landscapeJumpButton) {
+                    landscapeJumpButton.style.display = 'none';
+                }
+                console.log('DESKTOP MODE - Mobile controls hidden');
+                return;
+            }
+
+            if (window.matchMedia("(orientation: landscape)").matches) {
+                // Landscape mode (mobile only)
+                console.log('APPLYING LANDSCAPE MODE - SHOWING SEPARATE BUTTON');
+
+                // Landscape jump button is now handled by CSS media query
+                // No JavaScript styling needed
+
+                // Hide rotation reminder in landscape
+                if (rotationReminder) {
+                    rotationReminder.style.display = 'none';
+                }
+            } else {
+                // Portrait mode - hide landscape button, show portrait controls
+                console.log('PORTRAIT MODE - Showing portrait controls');
+                if (landscapeJumpButton) {
+                    landscapeJumpButton.style.display = 'none';
+                }
+                if (mobileControls) {
+                    mobileControls.style.display = 'block';
+                }
+                if (jumpButton) {
+                    jumpButton.style.display = 'flex';
+                }
+            }
+        }
+
+        // Check on load and orientation change
+        window.addEventListener('load', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+        window.addEventListener('resize', checkOrientation);
+
+        // IMMEDIATE call to ensure it runs right away
+        checkOrientation();
+
+        // Also force after a delay to ensure DOM is ready
+        setTimeout(checkOrientation, 100);
+        setTimeout(checkOrientation, 500);
+        setTimeout(checkOrientation, 1000);
     </script>
     <script type="module" src="./app.js"></script>
 </body>

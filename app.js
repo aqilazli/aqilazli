@@ -14,7 +14,7 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 camera.position.set(0, 3, 8); // Initial position
 
 // Camera follow settings (Mobile Legends style - 30 degree angle looking down, balanced view)
-const cameraOffset = new THREE.Vector3(0, 60, -100); // 30 degree angle - lower camera, further back
+const cameraOffset = new THREE.Vector3(0, 60, -100); // Camera behind robot
 const cameraLookAtOffset = new THREE.Vector3(0, 0, 0); // Look at robot's center
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -53,8 +53,9 @@ let walkCycle = 0;
 let isWalking = false;
 let targetRotation = Math.PI; // 180 degrees - robot initial rotation
 let currentRotation = Math.PI; // 180 degrees
+let cameraRotation = Math.PI; // Camera's own rotation that follows more slowly
 let moveDirection = { forward: 0, right: 0 };
-let speedMultiplier = 0.3;
+let speedMultiplier = 1.8; // Faster forward movement when touched
 let isReversing = false; // Track if robot is in reverse mode
 let baseRotation = Math.PI; // Store the base rotation - 180 degrees
 let sKeyWasPressed = false; // Track if S key was already pressed to prevent rapid toggling
@@ -71,8 +72,8 @@ const originOffset = { x: 681.30, y: -100, z: -50 }; // Robot Y position at -120
 // Jump variables
 let isJumping = false;
 let jumpVelocity = 0;
-let gravity = 0.014; // Adjusted gravity for higher jump
-let jumpStrength = 2.0; // Higher jump strength
+let gravity = 0.5; // Realistic gravity (stronger pull down)
+let jumpStrength = 8.0; // Realistic jump strength
 
 let isBowing = false;
 let bowProgress = 0;
@@ -439,23 +440,34 @@ function loadModelFromGLTF(gltf) {
     // Position robot at initial coordinates
     model.position.set(681.30, -100, -50); // Robot Y position at -130
 
-    // Make robot invisible initially
-    model.visible = false;
+    // Make robot visible immediately for debugging
+    model.visible = true;
 
     scene.add(model);
 
     targetRotation = Math.PI; // 180 degrees
     currentRotation = Math.PI; // 180 degrees
+    cameraRotation = Math.PI; // Initialize camera rotation
 
-    populatePartLists();
+    // Set initial camera position near the robot
+    const offset = cameraOffset.clone();
+    offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraRotation);
+    camera.position.set(
+        model.position.x + offset.x,
+        model.position.y + offset.y,
+        model.position.z + offset.z
+    );
+
+    // Commented out - panel is hidden
+    // populatePartLists();
 
     // Start teleportation effect
     createTeleportEffect(model.position);
 
-    // Make robot visible after 2 seconds
+    // Fade in effect instead of delay
     setTimeout(() => {
-        model.visible = true;
-    }, 2000);
+        console.log('Robot fully loaded and visible');
+    }, 100);
 }
 
 window.toggleMainPanel = function () {
@@ -586,8 +598,8 @@ window.resetPosition = function () {
 }
 
 function updateWalkAnimation() {
-    const legSwing = Math.sin(walkCycle) * 0.3;
-    const armSwing = Math.sin(walkCycle) * 0.2;
+    const legSwing = Math.sin(walkCycle) * 0.5; // Increased from 0.3 to 0.5 for more pronounced leg movement
+    const armSwing = Math.sin(walkCycle) * 0.35; // Increased from 0.2 to 0.35 for more pronounced arm movement
 
     if (robotParts.leftLeg) {
         robotParts.leftLeg.rotation.x = legSwing;
@@ -626,60 +638,86 @@ document.addEventListener('keyup', (e) => {
     console.log('Key released:', e.code); // Debug log
 });
 
-// Mobile joystick controls
-let joystickActive = false;
-let joystickVector = { x: 0, y: 0 };
+// Mobile touch controls (Bruno Simon style - swipe anywhere to move)
+let touchActive = false;
+let touchVector = { x: 0, y: 0 };
+let touchStartPos = { x: 0, y: 0 };
+let touchCurrentPos = { x: 0, y: 0 };
+let lastTouchAngle = 0; // Track angle for circular rotation detection
+let accumulatedRotation = 0; // Track total rotation during touch
 
-const joystickContainer = document.getElementById('joystickContainer');
-const joystickStick = document.getElementById('joystickStick');
 const jumpButton = document.getElementById('jumpButton');
 
-function handleJoystickMove(touch) {
-    const rect = document.getElementById('joystickBase').getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+function handleTouchStart(e) {
+    // Ignore if touching the jump button or control panel
+    const touch = e.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
 
-    let deltaX = touch.clientX - centerX;
-    let deltaY = touch.clientY - centerY;
-
-    const maxDistance = 35;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-    if (distance > maxDistance) {
-        deltaX = (deltaX / distance) * maxDistance;
-        deltaY = (deltaY / distance) * maxDistance;
+    if (element && (element.id === 'jumpButton' || element.closest('#jumpButton') || element.closest('#partSelector'))) {
+        return;
     }
 
-    joystickStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+    e.preventDefault();
+    touchActive = true;
+    touchStartPos.x = touch.clientX;
+    touchStartPos.y = touch.clientY;
+    touchCurrentPos.x = touch.clientX;
+    touchCurrentPos.y = touch.clientY;
 
-    joystickVector.x = deltaX / maxDistance;
-    joystickVector.y = deltaY / maxDistance;
+    // Initialize angle tracking for circular rotation
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    lastTouchAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX);
+    accumulatedRotation = 0;
 }
 
-function resetJoystick() {
-    joystickStick.style.transform = 'translate(-50%, -50%)';
-    joystickVector = { x: 0, y: 0 };
-    joystickActive = false;
+function handleTouchMove(e) {
+    if (!touchActive) return;
+
+    e.preventDefault();
+    const touch = e.touches[0];
+    touchCurrentPos.x = touch.clientX;
+    touchCurrentPos.y = touch.clientY;
+
+    // Calculate movement delta from start position
+    const deltaX = touchCurrentPos.x - touchStartPos.x;
+    const deltaY = touchCurrentPos.y - touchStartPos.y;
+
+    // Detect circular rotation around screen center
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    const currentAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX);
+
+    // Calculate angle difference (rotation)
+    let angleDiff = currentAngle - lastTouchAngle;
+
+    // Normalize angle difference to -π to π
+    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+    // Accumulate rotation
+    accumulatedRotation += angleDiff;
+    lastTouchAngle = currentAngle;
+
+    // Normalize the vector (sensitivity adjustment for Mobile Legends-like controls)
+    const sensitivity = 120; // Faster reaction, more responsive
+    touchVector.x = Math.max(-1, Math.min(1, deltaX / sensitivity));
+    touchVector.y = Math.max(-1, Math.min(1, deltaY / sensitivity));
 }
 
-joystickContainer.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    joystickActive = true;
-    handleJoystickMove(e.touches[0]);
-});
+function resetTouch() {
+    touchVector = { x: 0, y: 0 };
+    touchActive = false;
+    accumulatedRotation = 0;
+}
 
-joystickContainer.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    if (joystickActive) {
-        handleJoystickMove(e.touches[0]);
-    }
-});
+// Add touch event listeners to the canvas/renderer
+renderer.domElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+renderer.domElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+renderer.domElement.addEventListener('touchend', resetTouch, { passive: false });
+renderer.domElement.addEventListener('touchcancel', resetTouch, { passive: false });
 
-joystickContainer.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    resetJoystick();
-});
-
+// Jump button
 jumpButton.addEventListener('touchstart', (e) => {
     e.preventDefault();
     if (model && !isJumping) {
@@ -687,6 +725,18 @@ jumpButton.addEventListener('touchstart', (e) => {
         jumpVelocity = jumpStrength;
     }
 });
+
+// Landscape jump button (separate element)
+const landscapeJumpButton = document.getElementById('landscapeJumpButton');
+if (landscapeJumpButton) {
+    landscapeJumpButton.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (model && !isJumping) {
+            isJumping = true;
+            jumpVelocity = jumpStrength;
+        }
+    });
+}
 
 // Animation loop
 function animate() {
@@ -744,33 +794,79 @@ function animate() {
             moving = true;
         }
 
-        // Update target rotation based on reverse mode
-        if (isReversing) {
-            targetRotation = baseRotation + Math.PI; // Face backward
-        } else {
-            targetRotation = baseRotation; // Face forward
+        // Update target rotation based on reverse mode (only for keyboard controls)
+        // Only reset rotation if keyboard keys are actually being pressed
+        if (!touchActive && (keys['w'] || keys['s'] || keys['a'] || keys['d'] || keys['ArrowUp'] || keys['ArrowDown'] || keys['ArrowLeft'] || keys['ArrowRight'])) {
+            if (isReversing) {
+                targetRotation = baseRotation + Math.PI; // Face backward
+            } else {
+                targetRotation = baseRotation; // Face forward
+            }
         }
 
+        // Mobile touch input - separate rotation and movement controls
+        if (touchActive && (Math.abs(touchVector.x) > 0.1 || Math.abs(touchVector.y) > 0.1)) {
+            // Determine swipe direction based on which axis has stronger input
+            const absX = Math.abs(touchVector.x);
+            const absY = Math.abs(touchVector.y);
 
-        // Mobile joystick input
-        if (joystickActive && (Math.abs(joystickVector.x) > 0.1 || Math.abs(joystickVector.y) > 0.1)) {
-            // Forward/backward movement
-            const forwardAmount = -joystickVector.y;
-            moveX += Math.sin(currentRotation) * speed * forwardAmount;
-            moveZ += Math.cos(currentRotation) * speed * forwardAmount;
+            // Calculate distance from touch start to determine if it's a swipe or rotation
+            const deltaX = touchCurrentPos.x - touchStartPos.x;
+            const deltaY = touchCurrentPos.y - touchStartPos.y;
+            const swipeDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-            // Left/right rotation and strafe
-            const rightAmount = -joystickVector.x;
-            targetRotation -= rotationSpeed * rightAmount;
-            moveX += Math.sin(currentRotation + Math.PI / 2) * speed * rightAmount;
-            moveZ += Math.cos(currentRotation + Math.PI / 2) * speed * rightAmount;
+            // Reset accumulated rotation (circular motion disabled)
+            accumulatedRotation = 0;
+
+            // Check swipe direction - absX and absY already calculated above
+            if (touchVector.y > 0 && absY > absX * 2) {
+                // Swipe DOWN (STRONGLY vertical) = Turn around 180° (face backward)
+                targetRotation = currentRotation + Math.PI;
+            } else if (touchVector.y < 0) {
+                // Swipe UP (any angle) = Move forward + optional rotation
+                const baseSpeed = 0.028;
+                const progressiveSpeed = 0.018;
+
+                if (absX > absY * 0.3) {
+                    // Diagonal forward movement (left or right while moving forward)
+                    if (touchVector.x < 0) {
+                        // Swipe UP-LEFT = Rotate left while moving forward
+                        targetRotation += baseSpeed + (absX / absY) * progressiveSpeed;
+                    } else {
+                        // Swipe UP-RIGHT = Rotate right while moving forward
+                        targetRotation -= baseSpeed + (absX / absY) * progressiveSpeed;
+                    }
+                }
+
+                // Always move forward when swiping up
+                moveX += Math.sin(currentRotation) * speed;
+                moveZ += Math.cos(currentRotation) * speed;
+            } else if (absX > absY * 1.5) {
+                // Swipe LEFT or RIGHT (STRONGLY horizontal) = Rotate in place
+                const baseSpeed = 0.028;
+                const progressiveSpeed = 0.018;
+
+                if (touchVector.x < 0) {
+                    // Swipe LEFT = Rotate left in place
+                    targetRotation += baseSpeed + (absX / Math.max(absY, 0.1)) * progressiveSpeed;
+                } else {
+                    // Swipe RIGHT = Rotate right in place
+                    targetRotation -= baseSpeed + (absX / Math.max(absY, 0.1)) * progressiveSpeed;
+                }
+            }
 
             moving = true;
         }
 
-        // Smooth rotation - very slow interpolation for smooth, realistic body turning
-        const rotationDiff = targetRotation - currentRotation;
-        currentRotation += rotationDiff * 0.08; // Increased to 0.08 for smoother follow (not too slow, not too fast)
+        // Smooth rotation - very slow interpolation for stable camera
+        // Normalize angle difference to always take the shortest path
+        let rotationDiff = targetRotation - currentRotation;
+
+        // Handle angle wrapping (ensure we rotate the shortest direction)
+        while (rotationDiff > Math.PI) rotationDiff -= Math.PI * 2;
+        while (rotationDiff < -Math.PI) rotationDiff += Math.PI * 2;
+
+        currentRotation += rotationDiff * 0.08; // Slower rotation for more stable camera
         model.rotation.y = currentRotation;
 
         // Apply movement
@@ -790,7 +886,7 @@ function animate() {
 
         if (moving) {
             isWalking = true;
-            walkCycle += 0.15 * speedMultiplier;
+            walkCycle += 0.25 * speedMultiplier; // Increased from 0.15 to 0.25 for faster animation
             updateWalkAnimation();
         } else {
             if (isWalking) {
@@ -832,11 +928,15 @@ function animate() {
 
     // Mobile Legends style camera follow - camera stays behind robot
     if (model) {
-        // Calculate camera position behind the robot based on its rotation
+        // Smoothly interpolate camera rotation to follow target rotation
+        let camRotDiff = targetRotation - cameraRotation;
+        while (camRotDiff > Math.PI) camRotDiff -= Math.PI * 2;
+        while (camRotDiff < -Math.PI) camRotDiff += Math.PI * 2;
+        cameraRotation += camRotDiff * 0.06; // Faster camera rotation to reduce shake on reverse
+
+        // Calculate camera position behind the robot based on CAMERA rotation
         const offset = cameraOffset.clone();
-        // Rotate camera offset based on robot's current rotation
-        // This makes camera follow from behind as robot rotates
-        offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), currentRotation);
+        offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraRotation);
 
         const targetCameraPosition = new THREE.Vector3(
             model.position.x + offset.x,
@@ -844,16 +944,15 @@ function animate() {
             model.position.z + offset.z
         );
 
-        // Smooth camera movement (lerp)
-        camera.position.lerp(targetCameraPosition, 0.1);
+        // Very smooth camera movement (slower lerp for more stable camera)
+        camera.position.lerp(targetCameraPosition, 0.05);
 
-        // Calculate look-at point in front of the robot based on its rotation
-        // This makes the robot face its movement direction
-        const lookAheadDistance = 10; // How far ahead to look
+        // Calculate look-at point at the robot position
+        // Camera always looks directly at the robot
         const lookAtTarget = new THREE.Vector3(
-            model.position.x - Math.sin(currentRotation) * lookAheadDistance,
+            model.position.x,
             model.position.y + cameraLookAtOffset.y,
-            model.position.z - Math.cos(currentRotation) * lookAheadDistance
+            model.position.z
         );
         camera.lookAt(lookAtTarget);
     }
