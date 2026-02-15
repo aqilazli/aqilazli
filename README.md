@@ -6,9 +6,9 @@ Industrial Automation • Robotics • PLC Systems • AI Integration • Mechat
 
 ---
 
-## 👨‍💻 Professional Profile
+## 👨‍💻 Profile
 
-Mechatronics and AI engineer with hands-on experience in robotics, industrial automation, and intelligent control systems. Skilled in integrating hardware and software to develop smart, scalable, and efficient automation solutions aligned with **Industry 4.0 standards**.  
+Mechatronics and AI engineer with hands-on experience in robotics, industrial automation and intelligent control systems. Skilled in integrating hardware and software to develop smart, scalable, and efficient automation solutions aligned with **Industry 4.0 standards**.  
 
 Focused on designing, programming, and deploying AI-driven robotics systems for industrial applications, with strong emphasis on reliability, precision, and performance.  
 
@@ -41,8 +41,8 @@ Focused on designing, programming, and deploying AI-driven robotics systems for 
 - Machine learning integration for real-time data  
 
 ### 3D Design & Visualization
-- SketchUp modeling for mechanical concepts  
-- Enscape / Lumion rendering for visualization  
+- SketchUp modeling for environmental concepts  
+- 3D engineering drawing Solidworks, Ironcad, Inventor
 - Prototype simulation and presentation  
 
 ---
