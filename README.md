@@ -1,4 +1,4 @@
-![Profile_Header](https://github.com/aqilazli/aqilazli/assets/robotheader.png)
+![Profile_Header](assets/robot-header.png)
 
 # Aqil Azli | Test Engineer 🤖🧠 ---> AI Robotics Engineer
 
