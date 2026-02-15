@@ -1,8 +1,6 @@
 ![Profile_Header](assets/robotheader.png)
 
-# Aqil Azli | Test Engineer 🤖🧠 ---> AI Robotics Engineer
-
-Industrial Automation • Robotics • PLC Systems • AI Integration • Mechatronics • 3D Engineering Design  
+##Industrial Automation • Robotics • PLC Systems • AI Integration • Mechatronics • 3D Engineering Design  
 
 ---
 
