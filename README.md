@@ -1,3 +1,5 @@
+![Profile_Header](https://github.com/aqilazli/aqilazli/assets/robot-header.png)
+
 # Aqil Azli | Test Engineer 🤖🧠 ---> AI Robotics Engineer
 
 Industrial Automation • Robotics • PLC Systems • AI Integration • Mechatronics • 3D Engineering Design  
@@ -65,7 +67,7 @@ Focused on designing, programming, and deploying AI-driven robotics systems for 
 
 ## 🎯 Career Objective
 
-To contribute to *Industrial automation and AI robotics projects** by delivering AI-driven, intelligent and reliable systems, bridging the gap between advanced robotics, AI and Industry 4.0 standards.  
+To contribute to **Industrial automation and AI robotics projects** by delivering AI-driven, intelligent and reliable systems, bridging the gap between advanced robotics, AI and Industry 4.0 standards.  
 
 ---
 
